@@ -35,7 +35,7 @@ static int
 recvex_msghandler (int m, int c, struct msgbuf *buf, int bufcnt)
 {
 	int i;
-	void *recvbuf, *sendbuf;
+	char *recvbuf, *sendbuf;
 	int recvlen, sendlen;
 
 	printf ("***recvexample start***\n");
@@ -47,8 +47,8 @@ recvex_msghandler (int m, int c, struct msgbuf *buf, int bufcnt)
 	recvlen = buf[0].len;
 	sendbuf = buf[1].base;
 	sendlen = buf[1].len;
-	printf ("recvbuf %p recvlen 0x%x\n", recvbuf, recvlen);
-	printf ("sendbuf %p sendlen 0x%x\n", sendbuf, sendlen);
+	printf ("recvbuf %s recvlen 0x%x\n", recvbuf, recvlen);
+	printf ("sendbuf %s sendlen 0x%x\n", sendbuf, sendlen);
 	printf ("recvbuf: ");
 	for (i = 0; i < 16 && i < recvlen; i++)
 		printf ("0x%02x ", ((unsigned char *)recvbuf)[i]);

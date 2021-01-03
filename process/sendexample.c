@@ -52,7 +52,7 @@ sendex (char *buf)
 	int a, i;
 	struct msgbuf mbuf[2];
 
-	a = msgopen ("recvex");
+	a = msgopen ("sqlitemsg");
 	if (a < 0) {
 		printf ("msgopen failed.\n");
 		return;
@@ -86,14 +86,15 @@ _start (int a1, int a2)
 		case 'h':
 			print_help (buf);
 			break;
-		case 's':
-			sendex (buf);
-			break;
+//		case 's':
+//			sendex (buf);
+//			break;
 		case 'q':
 			exitprocess (0);
 			break;
 		default:
-			command_error ();
+			sendex(buf);
+			//command_error ();
 			break;
 		}
 	}

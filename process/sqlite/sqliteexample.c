@@ -298,16 +298,19 @@ _start (int a1, int a2)
 	lineinput (buf, sizeof buf);
 	char *p;
 	int dev = (int)strtol (buf, &p, 0);
+	printf("%d",dev);
 	if (p == buf)
 		exitprocess (0);
 	printf ("Start LBA? ");
 	lineinput (buf, sizeof buf);
 	long start = strtol (buf, &p, 0);
+	printf("%ld",start);
 	if (p == buf)
 		exitprocess (0);
 	printf ("End LBA? ");
 	lineinput (buf, sizeof buf);
 	long end = strtol (buf, &p, 0);
+	printf("%ld",end);
 	if (p == buf)
 		exitprocess (0);
 	if (end < start)

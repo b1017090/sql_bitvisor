@@ -246,29 +246,30 @@ callback_size (void *data, long long size)
 }
 
 static int
-sqltest (void)
+sqltest (int m, int c, struct msgbuf *buf, int bufcnt)
 {
+	static char *sqlbuf;
+	sqlbuf = buf[0].base;
 	sqlite3 *db;
 	if (sqlite3_open ("a", &db) != SQLITE_OK) {
 		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
 		sqlite3_close (db);
 		return 1;
 	}
-	for (;;) {
-		static char buf[256];
-		printf ("sqliteexample> ");
-		lineinput (buf, 256);
-		if (!buf[0]) {
-			sqlite3_close (db);
-			return 0;
-		}
+		//static char buf[256];
+		//printf ("sqliteexample> ");
+		//lineinput (buf, 256);
+	//	if (!buf[0]) {
+	//		sqlite3_close (db);
+	//		return 0;
+	//	}
 		char *zErrMsg = NULL;
-		int rc = sqlite3_exec (db, buf, callback, 0, &zErrMsg);
+		int rc = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
+		exitprocess(0);
 		if (rc != SQLITE_OK) {
 			printf ("SQL error: %s\n", zErrMsg);
 			sqlite3_free (zErrMsg);
 		}
-	}
 }
 
 int
@@ -283,35 +284,26 @@ _start (int a1, int a2)
 	sqlite3_vfs_register (v_vfs(), 1);
 	printf ("Memory(m) or storage_io(s)? ");
 	static char buf[256];
-	lineinput (buf, sizeof buf);
-	if (!strcmp (buf, "m")) {
-		v_register ("a", 12, mem_rw, NULL);
-		v_register ("a-journal", 12, mem_rw, mem_rw);
-		exitprocess (sqltest ());
-	}
-	if (strcmp (buf, "s"))
-		exitprocess (0);
 	int id = storage_io_init ();
 	printf ("id %d\n", id);
 	printf ("Number of devices %d\n", storage_io_get_num_devices (id));
 	printf ("Device number? ");
-	lineinput (buf, sizeof buf);
+//	buf[0]=1;
+      //  lineinput (buf, sizeof buf);
 	char *p;
-	int dev = (int)strtol (buf, &p, 0);
-	if (p == buf)
-		exitprocess (0);
+	int dev = 1;
+	printf("%d\n",dev);
 	printf ("Start LBA? ");
-	lineinput (buf, sizeof buf);
-	long start = strtol (buf, &p, 0);
-	if (p == buf)
-		exitprocess (0);
+	//buf[0]=500109310;
+	//lineinput (buf, sizeof buf);
+	long start = 500109310;
+	printf("%ld\n",start);
 	printf ("End LBA? ");
-	lineinput (buf, sizeof buf);
-	long end = strtol (buf, &p, 0);
-	if (p == buf)
-		exitprocess (0);
+	//buf[0]=500117502;
+	//lineinput (buf, sizeof buf);
+	long end = 500117502;
+	printf("%ld\n",end);
 	if (end < start)
-		exitprocess (0);
 	printf ("Device %d LBA %ld-%ld Storage size ", dev, start, end);
 	waitd = msgopen ("wait");
 	if (waitd < 0) {
@@ -328,9 +320,9 @@ _start (int a1, int a2)
 	setmsgbuf (&mbuf, &waitflag, sizeof waitflag, 0);
 	msgsendbuf (waitd, 0, &mbuf, 1);
 	printf ("%lld (may be incorrect)\n", size);
-	printf ("Continue(y/n)? ");
-	lineinput (buf, sizeof buf);
-	if (!strcmp (buf, "y")) {
+	//printf ("Continue(y/n)? ");
+	//buf[0]="y";
+	//lineinput (buf, sizeof buf);
 		long long lastblk1 = 0;
 		long long lastblk2 = 0;
 		struct stordata s = {
@@ -356,8 +348,8 @@ _start (int a1, int a2)
 		};
 		struct cat_data *rc = cat_new (rev_rw, &r, 12);
 		v_register ("a-journal", 12, cat_rw, rc);
-		exitprocess (sqltest ());
-	}
-	exitprocess (0);
+		msgregister("sqlitemsg", sqltest);
+	//	exitprocess (sqltest ());
+//	exitprocess(0);
 	return 0;
 }
