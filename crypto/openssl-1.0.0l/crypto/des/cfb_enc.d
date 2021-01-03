@@ -1,0 +1,19 @@
+crypto/openssl-1.0.0l/crypto/des/cfb_enc.o: \
+ crypto/openssl-1.0.0l/crypto/des/cfb_enc.c crypto/chelp.h \
+ crypto/openssl-1.0.0l/e_os.h \
+ crypto/openssl-1.0.0l/include/openssl/opensslconf.h \
+ crypto/openssl-1.0.0l/include/openssl/e_os2.h crypto/unistd.h \
+ crypto/sys/types.h crypto/openssl-1.0.0l/crypto/des/des_locl.h \
+ crypto/stdio.h include/stdlib.h crypto/math.h \
+ crypto/openssl-1.0.0l/include/openssl/des.h crypto/string.h \
+ crypto/assert.h
+
+\
+ crypto/openssl-1.0.0l/crypto/des/cfb_enc.c crypto/chelp.h \
+ crypto/openssl-1.0.0l/e_os.h \
+ crypto/openssl-1.0.0l/include/openssl/opensslconf.h \
+ crypto/openssl-1.0.0l/include/openssl/e_os2.h crypto/unistd.h \
+ crypto/sys/types.h crypto/openssl-1.0.0l/crypto/des/des_locl.h \
+ crypto/stdio.h include/stdlib.h crypto/math.h \
+ crypto/openssl-1.0.0l/include/openssl/des.h crypto/string.h \
+ crypto/assert.h :

@@ -44,6 +44,8 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
+#include "core/process.h"
+#include "core/printf.h"
 
 #if LWIP_TCP
 
@@ -137,8 +139,10 @@ static err_t
 echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
   struct echo_state *es;
+  int sqlite, sqlitemsg;
   err_t ret_err;
 
+  sqlitemsg = msgopen("sqlitemsg");
   LWIP_ASSERT("arg != NULL",arg != NULL);
   es = (struct echo_state *)arg;
   if (p == NULL)
@@ -177,16 +181,23 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     /* install send completion notifier */
     tcp_sent(tpcb, echo_sent);
     echo_send(tpcb, es);
+    printf("accepted");
     ret_err = ERR_OK;
   }
   else if (es->state == ES_RECEIVED)
   {
+
     /* read some more data */
     if(es->p == NULL)
     {
       es->p = p;
       tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
+
+      sqlite=newprocess("sqliteexample");
+      msgsenddesc(sqlite, sqlitemsg);
+      msgsendint(sqlite, 0);
+      msgclose(sqlite);
     }
     else
     {

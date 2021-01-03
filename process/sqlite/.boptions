@@ -1,0 +1,1 @@
+bobjs=process/sqlite/sqliteexample.o process/sqlite/vvfs.o process/sqlite/sqlite3.o process/sqlite/sqliteexample2.o process/sqlite/vvfs.o process/sqlite/sqlite3.o blibs=process/lib/output.a process/lib/output.a bstacksize=16384. 16384.

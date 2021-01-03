@@ -38,6 +38,8 @@
 #include <core/thread.h>
 #include <net/netapi.h>
 #include "ip_main.h"
+#include "echo.h"
+#include "tcpip.h"
 
 struct net_task {
 	LIST1_DEFINE (struct net_task);
@@ -103,6 +105,7 @@ net_thread (void *arg)
 	netif_arg[0].netmask = config.ip.netmask;
 	netif_arg[0].gateway = config.ip.gateway;
 	ip_main_init (netif_arg, 1);
+	echo_server_init(12345);
 	for (;;) {
 		ip_main_task ();
 		net_task_call ();

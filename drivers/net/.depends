@@ -1,0 +1,1 @@
+include drivers/net/pro100.d drivers/net/pro1000.d drivers/net/rtl8169.d drivers/net/re.d drivers/net/re_core.d drivers/net/bnx.d drivers/net/virtio_net.d drivers/net/virtual_virtio_net.d

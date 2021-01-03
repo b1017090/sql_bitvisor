@@ -1,0 +1,1 @@
+drivers/nvme/nvme.o drivers/nvme/nvme_subm_handler.o drivers/nvme/nvme_comp_handler.o drivers/nvme/nvme_common.o drivers/nvme/nvme_io.o drivers/nvme/nvme_crypt.o drivers/nvme/nvme_storage_io.o

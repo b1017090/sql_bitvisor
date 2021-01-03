@@ -1,0 +1,1 @@
+drivers/net/pro100.o drivers/net/pro1000.o drivers/net/rtl8169.o drivers/net/re.o drivers/net/re_core.o drivers/net/bnx.o drivers/net/virtio_net.o drivers/net/virtual_virtio_net.o

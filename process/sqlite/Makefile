@@ -13,7 +13,14 @@ sqliteexample-objs = sqliteexample.o vvfs.o sqlite3.o
 sqliteexample-libs = process/lib/$(outa)
 sqliteexample-stacksize = 16384
 
+sqliteexample2-objs = sqliteexample2.o vvfs.o sqlite3.o
+sqliteexample2-libs = process/lib/$(outa)
+sqliteexample2-stacksize = 16384
+
+
 bins-1 += sqliteexample
+bins-1 += sqliteexample2
+
 
 # The text size of sqlite3.o will be more than 500KB.  If another
 # program is added and the sqliteexample is not needed, use = like
