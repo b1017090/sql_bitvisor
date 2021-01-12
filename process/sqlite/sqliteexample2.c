@@ -28,59 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Usage via dbgsh:
-
-[Memory] the database is always empty on start
-------------------------------------------------------------
-> sqliteexample
-Memory(m) or storage_io(s)? m
-sqliteexample> create table foo(bar)
-sqliteexample> insert into foo(bar) values(1)
-sqliteexample> select * from foo
-bar = 1
-
-sqliteexample>
-------------------------------------------------------------
-
-[Storage_io] the database is persistent on a storage
-------------------------------------------------------------
-> sqliteexample
-Memory(m) or storage_io(s)? s
-id 1
-Number of devices 4
-Device number? 1
-Start LBA? 0
-End LBA? 20479
-Device 1 LBA 0-10239,10240-20479 Storage size 175913280995328 (may be incorrect)
-Continue(y/n)? y
-sqliteexample> select count(*) from a
-count(*) = 52
-
-sqliteexample> insert into a(a) values(2)
-sqliteexample> select count(*) from a
-count(*) = 53
-
-sqliteexample>
-> sqliteexample
-Memory(m) or storage_io(s)? s
-id 2
-Number of devices 4
-Device number? 1
-Start LBA? 0
-End LBA? 20479
-Device 1 LBA 0-10239,10240-20479 Storage size 175913280995328 (may be incorrect)
-Continue(y/n)? y
-sqliteexample> select count(*) from a
-count(*) = 53
-
-sqliteexample> select * from a where a=2
-a = 2
-b = NULL
-c = NULL
-
-sqliteexample>
------------------------------------------------------------- */
-
 #include <lib_lineinput.h>
 #include <lib_printf.h>
 #include <lib_stdlib.h>
@@ -248,34 +195,13 @@ callback_size (void *data, long long size)
 static int
 sqltest (int m, int c, struct msgbuf *buf, int bufcnt)
 {
-	static char *sqlbuf;
-	sqlbuf = buf[0].base;
-	sqlite3 *db;
-	if (sqlite3_open ("a", &db) != SQLITE_OK) {
-		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
-		sqlite3_close (db);
-		return 1;
-	}
-		//static char buf[256];
-		//printf ("sqliteexample> ");
-		//lineinput (buf, 256);
-	//	if (!buf[0]) {
-	//		sqlite3_close (db);
-	//		return 0;
-	//	}
-		char *zErrMsg = NULL;
-		int rc = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
-		exitprocess(0);
-		if (rc != SQLITE_OK) {
-			printf ("SQL error: %s\n", zErrMsg);
-			sqlite3_free (zErrMsg);
-		}
+if(bufcnt < 1){
+exitprocess(0);
+	return -1;
 }
 
-int
-_start (int a1, int a2)
-{
-	static char heap[1048576] __attribute__ ((aligned (8)));
+
+static char heap[1048576] __attribute__ ((aligned (8)));
 	sqlite3_config (SQLITE_CONFIG_HEAP, heap, sizeof heap, 32);
 	if (sqlite3_initialize () != SQLITE_OK) {
 		printf ("sqlite3_initialize failed\n");
@@ -283,7 +209,7 @@ _start (int a1, int a2)
 	}
 	sqlite3_vfs_register (v_vfs(), 1);
 	printf ("Memory(m) or storage_io(s)? ");
-	static char buf[256];
+//	static char buf[256];
 	int id = storage_io_init ();
 	printf ("id %d\n", id);
 	printf ("Number of devices %d\n", storage_io_get_num_devices (id));
@@ -310,12 +236,14 @@ _start (int a1, int a2)
 		printf ("msgopen \"wait\" failed\n");
 		exitprocess (1);
 	}
+
 	long long size = 0;
 	waitflag = 0;
 	if (storage_io_aget_size (id, dev, callback_size, &size) < 0) {
 		printf ("storage_io_aget_size failed\n");
 		exitprocess (1);
 	}
+
 	struct msgbuf mbuf;
 	setmsgbuf (&mbuf, &waitflag, sizeof waitflag, 0);
 	msgsendbuf (waitd, 0, &mbuf, 1);
@@ -348,8 +276,39 @@ _start (int a1, int a2)
 		};
 		struct cat_data *rc = cat_new (rev_rw, &r, 12);
 		v_register ("a-journal", 12, cat_rw, rc);
-		msgregister("sqlitemsg", sqltest);
-	//	exitprocess (sqltest ());
+
+
+	static char *sqlbuf;
+	sqlbuf = buf[0].base;
+	sqlite3 *db;
+	if (sqlite3_open ("a", &db) != SQLITE_OK) {
+		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
+		sqlite3_close (db);
+		return 1;
+	}
+		//static char buf[256];
+		//printf ("sqliteexample> ");
+		//lineinput (buf, 256);
+//		if (!buf[0]) {
+//			sqlite3_close (db);
+//			return 0;
+//		}
+		char *zErrMsg = NULL;
+		int rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
+//		exitprocess(0);
+		if (rc2 != SQLITE_OK) {
+			printf ("SQL error: %s\n", zErrMsg);
+			sqlite3_free (zErrMsg);
+		}
+		exitprocess(0);
+//		sqlite3_close(db);
+	return 0;
 //	exitprocess(0);
+}
+
+int
+_start (int a1, int a2)
+{
+	msgregister("sqlitemsg", sqltest);
 	return 0;
 }

@@ -139,10 +139,8 @@ static err_t
 echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
   struct echo_state *es;
-  int sqlite, sqlitemsg;
   err_t ret_err;
 
-  sqlitemsg = msgopen("sqlitemsg");
   LWIP_ASSERT("arg != NULL",arg != NULL);
   es = (struct echo_state *)arg;
   if (p == NULL)
@@ -178,10 +176,29 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     es->state = ES_RECEIVED;
     /* store reference to incoming pbuf (chain) */
     es->p = p;
+
+
+     /* char配列にTCPペイロードと長さをコピー */
+     // char str[256];
+     // memcpy(str, p -> payload, p -> len);
+
+      /* メッセージバッファを用意 */
+     // struct msgbuf mbuf;
+      //setmsgbuf(&mbuf, &str, sizeof str,0);
+
+      /* SQL実行文の送信 */
+     // sqlite=newprocess("sqliteexample2");
+    //  msgsenddesc(sqlite, sqlitemsg);
+
+
+  //    msgsendbuf(sqlitemsg, 0, &mbuf, 1);
+//      msgclose(sqlitemsg);
+
+
+
     /* install send completion notifier */
     tcp_sent(tpcb, echo_sent);
     echo_send(tpcb, es);
-    printf("accepted");
     ret_err = ERR_OK;
   }
   else if (es->state == ES_RECEIVED)
@@ -191,13 +208,36 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if(es->p == NULL)
     {
       es->p = p;
+      
+     /* char配列にTCPペイロードと長さをコピー */
+      char str[32];
+      memset(str, 0, 32);
+      memcpy(str, p -> payload, p -> len);
+
+      /* メッセージバッファを用意 */
+      struct msgbuf mbuf;
+      setmsgbuf(&mbuf, str, sizeof str,0);
+
+      /* SQL実行文の送信 */
+	int sqlite, sqlitemsg;
+        sqlite = newprocess("sqltieexample2");
+	sqlitemsg = msgopen("sqlitemsg");
+	msgsenddesc(sqlite, sqlitemsg);
+	msgsendbuf(sqlitemsg, 0, mbuf, 2);
+	msgclose(sqlitemsg);
+	msgclose(sqlite);
+
+//      sqlite=newprocess("sqliteexample2");
+//      sqlitemsg = msgopen("sqlitemsg");
+//      msgsenddesc(sqlite, sqlitemsg);
+//      msgsendbuf(sqlitemsg, 0, &mbuf, 1);
+//      msgclose(sqlitemsg);
+
       tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
-
-      sqlite=newprocess("sqliteexample");
-      msgsenddesc(sqlite, sqlitemsg);
-      msgsendint(sqlite, 0);
-      msgclose(sqlite);
+      
+//      echo_send(tpcb, es);
+//      schedule();
     }
     else
     {
@@ -314,6 +354,8 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
          (es->p->len <= tcp_sndbuf(tpcb)))
   {
   ptr = es->p;
+
+
 
   /* enqueue data for transmission */
   wr_err = tcp_write(tpcb, ptr->payload, ptr->len, 1);

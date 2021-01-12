@@ -64,10 +64,10 @@ sendex (char *buf)
 	setmsgbuf (&mbuf[1], d, sizeof d, 1);
 	if (msgsendbuf (a, 0, mbuf, 2)) {
 		printf ("msgsendbuf failed.\n");
-		msgclose (a);
+//		msgclose (a);
 		return;
 	}
-	msgclose (a);
+//	msgclose (a);
 	printf ("received: ");
 	for (i = 0; i < 32; i++)
 		printf ("0x%02x ", d[i]);
