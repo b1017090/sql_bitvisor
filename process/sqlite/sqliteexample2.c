@@ -192,13 +192,15 @@ callback_size (void *data, long long size)
 	waitflag = 1;
 }
 
-static int
-sqltest (int m, int c, struct msgbuf *buf, int bufcnt)
+int
+_start (int m, int c, struct msgbuf *buf, int bufcnt)
+//sqltest(int a, char buf)
 {
+/*
 if(bufcnt < 1){
 exitprocess(0);
 	return -1;
-}
+}*/
 
 
 static char heap[1048576] __attribute__ ((aligned (8)));
@@ -235,6 +237,7 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 	if (waitd < 0) {
 		printf ("msgopen \"wait\" failed\n");
 		exitprocess (1);
+		//return 1;
 	}
 
 	long long size = 0;
@@ -242,6 +245,7 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 	if (storage_io_aget_size (id, dev, callback_size, &size) < 0) {
 		printf ("storage_io_aget_size failed\n");
 		exitprocess (1);
+		//return 1;
 	}
 
 	struct msgbuf mbuf;
@@ -280,6 +284,7 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 
 	static char *sqlbuf;
 	sqlbuf = buf[0].base;
+//        sqlbuf = buf;
 	sqlite3 *db;
 	if (sqlite3_open ("a", &db) != SQLITE_OK) {
 		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
@@ -300,15 +305,19 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 			printf ("SQL error: %s\n", zErrMsg);
 			sqlite3_free (zErrMsg);
 		}
+		//exitprocess(0);
+		sqlite3_close(db);
 		exitprocess(0);
-//		sqlite3_close(db);
-	return 0;
+		return 0;
 //	exitprocess(0);
 }
 
-int
+/*int
 _start (int a1, int a2)
 {
+//	if(sqltest(a2)==0){
+//	exitprocess(0);
 	msgregister("sqlitemsg", sqltest);
 	return 0;
-}
+//	}
+}*/

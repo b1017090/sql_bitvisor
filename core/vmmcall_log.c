@@ -55,6 +55,8 @@ log_set_buf (void)
 {
 	u16 cs;
 	ulong physaddr;
+	const struct mm_as *as;
+
 
 	current->vmctl.read_sreg_sel (SREG_CS, &cs);
 	if (cs & 3)
@@ -69,6 +71,7 @@ log_set_buf (void)
 		return;
 	offset = 4;
 	buf = mapmem_gphys (physaddr, bufsize, MAPMEM_WRITE);
+//buf = mapmem_as (as, physaddr, bufsize, MAPMEM_WRITE);
 	if (old == NULL)
 		putchar_set_func (log_putchar, &old);
 }

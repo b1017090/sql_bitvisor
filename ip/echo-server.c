@@ -195,7 +195,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 //      msgclose(sqlitemsg);
 
 
-
+    printf("echoaccepted\n");
     /* install send completion notifier */
     tcp_sent(tpcb, echo_sent);
     echo_send(tpcb, es);
@@ -208,32 +208,44 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if(es->p == NULL)
     {
       es->p = p;
-      
-     /* char配列にTCPペイロードと長さをコピー */
-      char str[32];
-      memset(str, 0, 32);
-      memcpy(str, p -> payload, p -> len);
+  
+      tcp_sent(tpcb, echo_sent);
 
+
+     /* char配列にTCPペイロードと長さをコピー */
+      unsigned char str[32];
+      printf("memset\n");
+      memset(str, 0, 32);
+      printf("memcpy\n");
+      memcpy(str, p -> payload, p -> len);
+      printf("str -> %s\n", str);
       /* メッセージバッファを用意 */
       struct msgbuf mbuf;
+      printf("setmsgbuf\n");
       setmsgbuf(&mbuf, str, sizeof str,0);
 
       /* SQL実行文の送信 */
+      
 	int sqlite, sqlitemsg;
-        sqlite = newprocess("sqltieexample2");
-	sqlitemsg = msgopen("sqlitemsg");
-	msgsenddesc(sqlite, sqlitemsg);
-	msgsendbuf(sqlitemsg, 0, mbuf, 2);
-	msgclose(sqlitemsg);
+        sqlite = newprocess("sqliteexample2");
+        printf("newprocess = %d\n",sqlite);
+//	sqlitemsg = msgopen("sqlitemsg");
+//      printf("msgopen = %d\n",sqlitemsg);
+//	printf("msgsenddesc\n");
+//	msgsenddesc(sqlite, sqlitemsg);
+	printf("msgsendbuf\n");
+	msgsendbuf(sqlite, 0, &mbuf, 1);
+	printf("msgsendbufend\n");
 	msgclose(sqlite);
-
+//	msgclose(sqlite);
+	printf("msgclosed\n");
 //      sqlite=newprocess("sqliteexample2");
 //      sqlitemsg = msgopen("sqlitemsg");
 //      msgsenddesc(sqlite, sqlitemsg);
 //      msgsendbuf(sqlitemsg, 0, &mbuf, 1);
 //      msgclose(sqlitemsg);
 
-      tcp_sent(tpcb, echo_sent);
+//      tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
       
 //      echo_send(tpcb, es);
