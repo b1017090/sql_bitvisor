@@ -46,6 +46,7 @@
 #include "lwip/tcp.h"
 #include "core/process.h"
 #include "core/printf.h"
+#include "core/time.h"
 
 #if LWIP_TCP
 
@@ -140,6 +141,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
   struct echo_state *es;
   err_t ret_err;
+  u64 start, end;
 
   LWIP_ASSERT("arg != NULL",arg != NULL);
   es = (struct echo_state *)arg;
@@ -172,32 +174,44 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   }
   else if(es->state == ES_ACCEPTED)
   {
-    /* first data chunk in p->payload */
+  
+  /* first data chunk in p->payload */
     es->state = ES_RECEIVED;
     /* store reference to incoming pbuf (chain) */
     es->p = p;
 
+    tcp_sent(tpcb, echo_sent);
 
-     /* char配列にTCPペイロードと長さをコピー */
-     // char str[256];
-     // memcpy(str, p -> payload, p -> len);
-
+  //  printf("%llu\n",get_cpu_time());
+         /* char配列にTCPペイロードと長さをコピー */
+      unsigned char str[32];
+  //    printf("memset\n");
+      memset(str, 0, 32);
+//      printf("memcpy\n");
+      memcpy(str, p -> payload, p -> len);
+//      printf("str -> %s\n", str);
       /* メッセージバッファを用意 */
-     // struct msgbuf mbuf;
-      //setmsgbuf(&mbuf, &str, sizeof str,0);
+      struct msgbuf mbuf;
+    //  printf("setmsgbuf\n");
+      setmsgbuf(&mbuf, str, sizeof str,0);
 
       /* SQL実行文の送信 */
-     // sqlite=newprocess("sqliteexample2");
-    //  msgsenddesc(sqlite, sqlitemsg);
+  int sqlite;
+  sqlite = newprocess("sqliteexample2");
+
+      //        printf("newprocess = %d\n",sqlite);
+  //      printf("msgsendbuf\n");
+//        start = get_cpu_time();
+        msgsendbuf(sqlite, 0, &mbuf, 1);
+//  	end = get_cpu_time();
+//	printf("%lld\n", end-start);
+   //    printf("msgsendbufend\n");
+        msgclose(sqlite);
+      //  printf("msgclosed\n");
 
 
-  //    msgsendbuf(sqlitemsg, 0, &mbuf, 1);
-//      msgclose(sqlitemsg);
-
-
-    printf("echoaccepted\n");
     /* install send completion notifier */
-    tcp_sent(tpcb, echo_sent);
+//    tcp_sent(tpcb, echo_sent);
     echo_send(tpcb, es);
     ret_err = ERR_OK;
   }
@@ -214,42 +228,32 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
      /* char配列にTCPペイロードと長さをコピー */
       unsigned char str[32];
-      printf("memset\n");
+//      printf("memset\n");
       memset(str, 0, 32);
-      printf("memcpy\n");
+//      printf("memcpy\n");
       memcpy(str, p -> payload, p -> len);
-      printf("str -> %s\n", str);
+//      printf("str -> %s\n", str);
       /* メッセージバッファを用意 */
       struct msgbuf mbuf;
-      printf("setmsgbuf\n");
+//      printf("setmsgbuf\n");
       setmsgbuf(&mbuf, str, sizeof str,0);
 
-      /* SQL実行文の送信 */
-      
-	int sqlite, sqlitemsg;
-        sqlite = newprocess("sqliteexample2");
-        printf("newprocess = %d\n",sqlite);
-//	sqlitemsg = msgopen("sqlitemsg");
-//      printf("msgopen = %d\n",sqlitemsg);
-//	printf("msgsenddesc\n");
-//	msgsenddesc(sqlite, sqlitemsg);
-	printf("msgsendbuf\n");
-	msgsendbuf(sqlite, 0, &mbuf, 1);
-	printf("msgsendbufend\n");
+      /* SQL実行文の送信 */      
+int sqlite;
+       sqlite = newprocess("sqliteexample2");
+//        printf("newprocess = %d\n",sqlite);
+//	printf("msgsendbuf\n");
+//        start = get_cpu_time();
+        msgsendbuf(sqlite, 0, &mbuf, 1);
+//        end = get_cpu_time();
+//        printf("%lld\n", end-start);
+//	msgsendbuf(sqlite, 0, &mbuf, 1);
+//	printf("msgsendbufend\n");
 	msgclose(sqlite);
-//	msgclose(sqlite);
-	printf("msgclosed\n");
-//      sqlite=newprocess("sqliteexample2");
-//      sqlitemsg = msgopen("sqlitemsg");
-//      msgsenddesc(sqlite, sqlitemsg);
-//      msgsendbuf(sqlitemsg, 0, &mbuf, 1);
-//      msgclose(sqlitemsg);
+//	printf("msgclosed\n");
 
-//      tcp_sent(tpcb, echo_sent);
-      echo_send(tpcb, es);
+        echo_send(tpcb, es);
       
-//      echo_send(tpcb, es);
-//      schedule();
     }
     else
     {

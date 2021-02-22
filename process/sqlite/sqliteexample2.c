@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <time.h>
 #include <lib_lineinput.h>
 #include <lib_printf.h>
 #include <lib_stdlib.h>
@@ -37,6 +37,7 @@
 #include "assert.h"
 #include "sqlite3.h"
 #include "vvfs.h"
+
 
 struct stordata {
 	int id;
@@ -201,8 +202,6 @@ if(bufcnt < 1){
 exitprocess(0);
 	return -1;
 }*/
-
-
 static char heap[1048576] __attribute__ ((aligned (8)));
 	sqlite3_config (SQLITE_CONFIG_HEAP, heap, sizeof heap, 32);
 	if (sqlite3_initialize () != SQLITE_OK) {
@@ -286,6 +285,9 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 	sqlbuf = buf[0].base;
 //        sqlbuf = buf;
 	sqlite3 *db;
+	int time;
+	time = msgopen("timecount");
+//	msgsendint(time,0);
 	if (sqlite3_open ("a", &db) != SQLITE_OK) {
 		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
 		sqlite3_close (db);
@@ -299,14 +301,32 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 //			return 0;
 //		}
 		char *zErrMsg = NULL;
-		int rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
-//		exitprocess(0);
+                int rc2 = sqlite3_exec (db, "create table foo(no INT)", callback, 0, &zErrMsg);
+
+//		u64 start1,end1;
+//		start1=get_cpu_time();
+		for(int i=0;i<500;i++){
+		msgsendint(time,0);
+		rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
 		if (rc2 != SQLITE_OK) {
-			printf ("SQL error: %s\n", zErrMsg);
-			sqlite3_free (zErrMsg);
+                printf ("SQL error: %s\n", zErrMsg);
+                sqlite3_free (zErrMsg);
+                }
+
+		msgsendint(time,0);
 		}
+//		rc2 = sqlite3_exec (db, "COMMIT", callback, 0, &zErrMsg);
+//		exitprocess(0);
+//		msgsendint(time, 0);
+//		if (rc2 != SQLITE_OK) {
+//			printf ("SQL error: %s\n", zErrMsg);
+//			sqlite3_free (zErrMsg);
+//		}
 		//exitprocess(0);
+		msgclose(time);
 		sqlite3_close(db);
+//		end1=get_cpu_time();
+//		printf("%lld\n",end1-start1);
 		exitprocess(0);
 		return 0;
 //	exitprocess(0);

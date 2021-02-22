@@ -262,12 +262,26 @@ sqltest (void)
 			sqlite3_close (db);
 			return 0;
 		}
+  //              char *zErrMsg = NULL;
+
+//		int rc = sqlite3_exec (db, "create table foo (no INT)", callback, 0, &zErrMsg);
+//		for(int i=0; i<500; i++){
 		char *zErrMsg = NULL;
+		int time;
+		time = msgopen("timecount");
+		int rc = sqlite3_exec (db, "create table foo(no INT)", callback, 0, &zErrMsg);
+		for(int i=0;i<500;i++){
+		msgsendint(time, 0);
 		int rc = sqlite3_exec (db, buf, callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK) {
 			printf ("SQL error: %s\n", zErrMsg);
 			sqlite3_free (zErrMsg);
 		}
+		msgsendint(time,0);
+		}
+	//	msgsendint(time, 0);
+		msgclose(time);
+//		}
 	}
 }
 
@@ -302,14 +316,14 @@ _start (int a1, int a2)
 	if (p == buf)
 		exitprocess (0);
 	printf ("Start LBA? ");
-	lineinput (buf, sizeof buf);
-	long start = strtol (buf, &p, 0);
+//	lineinput (buf, sizeof buf);
+	long start = 500109310;
 	printf("%ld",start);
 	if (p == buf)
 		exitprocess (0);
 	printf ("End LBA? ");
-	lineinput (buf, sizeof buf);
-	long end = strtol (buf, &p, 0);
+//	lineinput (buf, sizeof buf);
+	long end = 500117502;
 	printf("%ld",end);
 	if (p == buf)
 		exitprocess (0);

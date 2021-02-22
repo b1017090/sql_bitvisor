@@ -36,6 +36,10 @@
 #include <core/spinlock.h>
 #include <core/string.h>
 #include <core/thread.h>
+#include <core/time.h>
+#include <../core/sleep.h>
+#include <core/printf.h>
+#include <core/process.h>
 #include <net/netapi.h>
 #include "ip_main.h"
 #include "echo.h"
@@ -92,6 +96,15 @@ net_main_task_add (void (*func) (void *arg), void *arg)
 	spinlock_unlock (&net_task_lock);
 }
 
+static int
+time_handler(int m, int c)
+{
+u64 time;
+time = get_cpu_time();
+printf("%lld\n",time);
+return 0;
+}
+
 static void
 net_thread (void *arg)
 {
@@ -105,10 +118,40 @@ net_thread (void *arg)
 	netif_arg[0].netmask = config.ip.netmask;
 	netif_arg[0].gateway = config.ip.gateway;
 	ip_main_init (netif_arg, 1);
+
 	echo_server_init(12345);
+/*	int test;
+	u64 start,end;
+	test = newprocess("test");
+	for(int i=0;i<500;i++){
+	start = get_cpu_time();
+	msgsendint(test,0);
+	end = get_cpu_time();
+	printf("%lld\n", end-start);
+	}
+	msgclose(test);*/
+//	msgopen();
+	msgregister("timecount",time_handler);
+/*	for (int i=0; i<500; i++) {
+      unsigned char str[255];
+      memset(str,0,255);
+      memcpy(str,"insert into foo values(1)", 26);
+      struct msgbuf mbuf;
+      setmsgbuf(&mbuf, str, sizeof str,0);
+        int test;
+	u64 start, end;
+        test = newprocess("test");
+        start = get_cpu_time();
+        msgsendbuf(test, 0, &mbuf, 1);
+        end = get_cpu_time();
+       	printf("%lld\n", end-start);
+	msgclose(test);
+	}
+*/
 	for (;;) {
 		ip_main_task ();
 		net_task_call ();
+//		msgregister("timecount",time_handler);
 		schedule ();
 	}
 }

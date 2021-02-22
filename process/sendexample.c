@@ -52,7 +52,7 @@ sendex (char *buf)
 	int a, i;
 	struct msgbuf mbuf[2];
 
-	a = msgopen ("sqlitemsg");
+	a = newprocess ("sqliteexample2");
 	if (a < 0) {
 		printf ("msgopen failed.\n");
 		return;
