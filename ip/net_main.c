@@ -132,7 +132,8 @@ net_thread (void *arg)
 	msgclose(test);*/
 //	msgopen();
 	msgregister("timecount",time_handler);
-/*	for (int i=0; i<500; i++) {
+	msgregister("timecount2",time_handler);
+	/*	for (int i=0; i<500; i++) {
       unsigned char str[255];
       memset(str,0,255);
       memcpy(str,"insert into foo values(1)", 26);

@@ -44,6 +44,10 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
+#include "raft.h"
+#include "raft_log.h"
+#include "raft_private.h"
+#include "raft_types.h"
 #include "core/process.h"
 #include "core/printf.h"
 #include "core/time.h"
@@ -69,6 +73,41 @@ struct echo_state
   struct pbuf *p;
 };
 
+
+//ラフトに使う情報を保存する構造体
+typedef struct raft_states{
+raft_state_e self_raft_state;
+int self_ip;
+raft_term_t current_term;
+raft_index_t index_counter;
+raft_node_id_t node_id;
+char log[255];
+};
+
+struct raft_states *raft_states;
+
+//raft state追加
+raft_state_e raft_state = RAFT_STATE_LEADER;
+
+//entryvoteで受け取ったデータの文字列と長さを格納
+raft_entry_data_t *receive_entry_data;
+//受け取ったデータをサーバに保存
+raft_entry_t *store_entry_data;
+//クライアントがメッセージを飛ばすときは、raft_entry_tに沿った内容で飛ばす
+
+//コミットされたかされてないかをクライアントに伝える
+msg_entry_response_t *entry_response;
+//サーバがリーダになりたいときに飛ばすrequestvote
+msg_requestvote_t *requestvote;
+//投票要求を受け入れたかどうかを伝える
+msg_requestvote_response_t *request_response;
+
+//クライアントからのエントリーを適用して大丈夫かの確認appendentry
+msg_appendentries_t *appendentries;
+//適用して大丈夫かの返答
+msg_appendentries_response_t *appendentries_response;
+
+
 static err_t echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
 static err_t echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 static void echo_error(void *arg, err_t err);
@@ -77,10 +116,28 @@ static err_t echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void echo_send(struct tcp_pcb *tpcb, struct echo_state *es);
 static void echo_close(struct tcp_pcb *tpcb, struct echo_state *es);
 
+void raft_init(struct raft_states *rs ){
+rs->current_term = 0;
+rs->index_counter = 0;
+if(rs->self_raft_state == RAFT_STATE_LEADER){
+rs->node_id = 0;
+}else {
+rs->node_id = 1;
+}
+}
+
 void
 echo_server_init (int port)
 {
   echo_pcb = tcp_new();
+
+  //サーバにRaftのステータスを追加
+
+  //わからないけどとりあえず追加
+  raft_states = (struct raft_states *)mem_malloc(sizeof(struct raft_states));
+  raft_states->self_raft_state = RAFT_STATE_LEADER;
+
+  
   if (echo_pcb != NULL)
   {
     err_t err;
@@ -114,14 +171,17 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 
   /* commonly observed practive to call tcp_setprio(), why? */
   tcp_setprio(newpcb, TCP_PRIO_MIN);
+  
 
   es = (struct echo_state *)mem_malloc(sizeof(struct echo_state));
+
   if (es != NULL)
   {
     es->state = ES_ACCEPTED;
     es->pcb = newpcb;
     es->retries = 0;
     es->p = NULL;
+
     /* pass newly allocated es to our callbacks */
     tcp_arg(newpcb, es);
     tcp_recv(newpcb, echo_recv);
