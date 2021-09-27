@@ -285,9 +285,9 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 	sqlbuf = buf[0].base;
 //        sqlbuf = buf;
 	sqlite3 *db;
-	int time,time2;
-	time = msgopen("timecount");
-	time2 = msgopen("timecount2");
+//	int time,time2;
+//	time = msgopen("timecount");
+//	time2 = msgopen("timecount2");
 	//	msgsendint(time,0);
 	if (sqlite3_open ("a", &db) != SQLITE_OK) {
 		printf ("Can't open database: %s\n", sqlite3_errmsg (db));
@@ -307,14 +307,15 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 //		u64 start1,end1;
 //		start1=get_cpu_time();
 //		for(int i=0;i<500;i++){
-		msgsendint(time,0);
-		rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
+/*		msgsendint(time,0);
+*/		rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
 		if (rc2 != SQLITE_OK) {
                 printf ("SQL error: %s\n", zErrMsg);
                 sqlite3_free (zErrMsg);
                 }
 
-		msgsendint(time2,0);
+/*		msgsendint(time2,0);
+*/
 //		}
 //		rc2 = sqlite3_exec (db, "COMMIT", callback, 0, &zErrMsg);
 //		exitprocess(0);
@@ -324,7 +325,7 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 //			sqlite3_free (zErrMsg);
 //		}
 		//exitprocess(0);
-		msgclose(time);
+//		msgclose(time);
 		sqlite3_close(db);
 //		end1=get_cpu_time();
 //		printf("%lld\n",end1-start1);

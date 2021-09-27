@@ -25,7 +25,7 @@ ip/echo-server.o: ip/echo-server.c ip/lwip-2.0.3/src/include/lwip/debug.h \
  ip/include/raft_types.h ip/include/raft_log.h ip/include/raft_private.h \
  ip/include/raft_types.h include/core/process.h include/core/printf.h \
  include/core/stdarg.h include/core/types.h include/share/vmm_types.h \
- include/core/time.h
+ include/core/time.h include/core/initfunc.h include/core/thread.h
 
 ip/echo-server.c ip/lwip-2.0.3/src/include/lwip/debug.h \
  ip/lwip-2.0.3/src/include/lwip/arch.h ip/include/arch/cc.h \
@@ -54,4 +54,4 @@ ip/echo-server.c ip/lwip-2.0.3/src/include/lwip/debug.h \
  ip/include/raft_types.h ip/include/raft_log.h ip/include/raft_private.h \
  ip/include/raft_types.h include/core/process.h include/core/printf.h \
  include/core/stdarg.h include/core/types.h include/share/vmm_types.h \
- include/core/time.h :
+ include/core/time.h include/core/initfunc.h include/core/thread.h :

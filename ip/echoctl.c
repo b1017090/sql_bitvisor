@@ -27,7 +27,8 @@ echoctl_echo_client_connect (void *arg)
 static void
 echoctl_echo_client_send (void *arg)
 {
-	echo_client_send ();
+char *send_buffer = "a";
+	echo_client_send (send_buffer);
 }
 
 static void

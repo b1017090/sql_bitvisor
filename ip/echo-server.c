@@ -51,6 +51,9 @@
 #include "core/process.h"
 #include "core/printf.h"
 #include "core/time.h"
+#include "core/initfunc.h"
+#include "core/thread.h"
+#include "core/types.h"
 
 #if LWIP_TCP
 
@@ -485,5 +488,27 @@ echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
   }  
   tcp_close(tpcb);
 }
+/*
+static void heartbeat_thread (void *arg) { 
+u64 start,cur;
 
+start = get_time();
+
+    for (;;) {  
+	schedule();
+      	cur = get_time();
+	if(cur - start >100){
+	printf("100\n");
+	start = cur;
+	}	
+    }  
+	thread_exit();
+} 
+
+static void heartbeat_kernel_init (void) { 
+    thread_new (heartbeat_thread, NULL, VMM_STACKSIZE); 
+}  
+
+INITFUNC ("config1", heartbeat_kernel_init);
+*/
 #endif /* LWIP_TCP */

@@ -144,7 +144,7 @@ struct config_data config = {
 		.tty_x540 = 0,
 		.tty_ieee1394 = 0,
 		.driver = {
-			.pci = "device=pro1000, number=0, driver=pro1000, net=ip, tty=1, and, driver=ahci",
+			.pci = "device=pro1000, number=0, driver=pro1000, net=ippass, tty=1, and, driver=ahci",
 		},
 		.iccard = {
 			.enable = 0,
@@ -152,8 +152,8 @@ struct config_data config = {
 		},
 	},
 	.ip = {
-	   .use_dhcp = 1,
-	   .ipaddr = { 192, 168, 100, 100 },
+	   .use_dhcp = 0,
+	   .ipaddr = { 192, 168, 100, 50 },
 	   .netmask = { 255, 255, 255, 0 },
 	   .gateway = { 192, 168, 18, 200 },
 	}

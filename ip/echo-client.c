@@ -14,42 +14,42 @@ static struct tcp_pcb *echo_client_pcb;
 
 #define SEND_BUFSIZE 1446
 #define TCP_SND_BUFFER 8192
-static char *send_buf = "Hello, BitVisor!\n";
+//static char *send_buf = "Hello, BitVisor!\n";
 
 int
-echo_client_send (void)
+echo_client_send (char *send_buf)
 {
 	err_t err;
 	struct tcp_pcb *pcb = echo_client_pcb;
 	int buflen;
 
 	if (!echo_client_pcb) {
-		printd ("No connection.\n");
+		printf ("No connection.\n");
 		return -1;
 	} else {
-		printd ("Connection found.\n");
+		printf ("Connection found.\n");
 	}
 
 	buflen = tcp_sndbuf (pcb);
 	if (buflen >= strlen (send_buf)) {
-		printd ("Space available: %d\n", buflen);
+		printf ("Space available: %d\n", buflen);
 		err = tcp_write (pcb, send_buf, strlen (send_buf),
 				 TCP_WRITE_FLAG_COPY);
 		if (err == ERR_OK) {
-			printd ("Enqueue succeeded.\n");
+			printf ("Enqueue succeeded.\n");
 			err = tcp_output (pcb);
 			if (err == ERR_OK) {
-				printd ("Send succeeded.\n");
+				printf ("Send succeeded.\n");
 			} else {
-				printd ("Send failed.\n");
+				printf ("Send failed.\n");
 				return -2;
 			}
 		} else {
-			printd ("Enqueue failed.\n");
+			printf ("Enqueue failed.\n");
 			return -3;
 		}
 	} else {
-		printd ("Space unavailable: %d\n", buflen);
+		printf ("Space unavailable: %d\n", buflen);
 		return -4;
 	}
 	return 0;
@@ -122,7 +122,7 @@ echo_client_init (int *ipaddr, int port)
 		  ipaddr[3]);
 	destport = port;
 
-	printd ("New Connection.\n");
+	printf ("New Connection.\n");
 	pcb = tcp_new ();
 	if (pcb) {
 		e = tcp_connect (pcb, &destip, destport,

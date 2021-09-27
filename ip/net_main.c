@@ -44,6 +44,9 @@
 #include "ip_main.h"
 #include "echo.h"
 #include "tcpip.h"
+#include "lwip/tcp.h"
+#include "lwip/debug.h"
+#include "lwip/stats.h"
 
 struct net_task {
 	LIST1_DEFINE (struct net_task);
@@ -95,7 +98,7 @@ net_main_task_add (void (*func) (void *arg), void *arg)
 	LIST1_ADD (net_task_list, p);
 	spinlock_unlock (&net_task_lock);
 }
-
+/*
 static int
 time_handler(int m, int c)
 {
@@ -104,12 +107,15 @@ time = get_cpu_time();
 printf("%lld\n",time);
 return 0;
 }
+*/
+
 
 static void
 net_thread (void *arg)
 {
 	struct net_ip_data *p = arg;
 	struct ip_main_netif netif_arg[1];
+	u64 start, now;
 
 	netif_arg[0].handle = p;
 	netif_arg[0].use_as_default = 1;
@@ -120,40 +126,29 @@ net_thread (void *arg)
 	ip_main_init (netif_arg, 1);
 
 	echo_server_init(12345);
-/*	int test;
-	u64 start,end;
-	test = newprocess("test");
-	for(int i=0;i<500;i++){
-	start = get_cpu_time();
-	msgsendint(test,0);
-	end = get_cpu_time();
-	printf("%lld\n", end-start);
-	}
-	msgclose(test);*/
-//	msgopen();
-	msgregister("timecount",time_handler);
-	msgregister("timecount2",time_handler);
-	/*	for (int i=0; i<500; i++) {
-      unsigned char str[255];
-      memset(str,0,255);
-      memcpy(str,"insert into foo values(1)", 26);
-      struct msgbuf mbuf;
-      setmsgbuf(&mbuf, str, sizeof str,0);
-        int test;
-	u64 start, end;
-        test = newprocess("test");
-        start = get_cpu_time();
-        msgsendbuf(test, 0, &mbuf, 1);
-        end = get_cpu_time();
-       	printf("%lld\n", end-start);
-	msgclose(test);
-	}
-*/
+	start = get_time();
+	
+	int connectip[4];
+	connectip[0]=192;
+	connectip[1]=168;
+	connectip[2]=100;
+	connectip[3]=50;
+	
+	char *send_buffer = "hello";
+
 	for (;;) {
 		ip_main_task ();
 		net_task_call ();
-//		msgregister("timecount",time_handler);
-		schedule ();
+	        now = get_time();
+        	if(now - start > 2*48000000/*1minute*/){
+		echo_client_init(connectip, 12345);
+		echo_client_send(send_buffer);
+		start = now;
+		schedule();
+		}else{
+		schedule();
+		}
+		//		msgregister("timecount",time_handler);
 	}
 }
 
@@ -363,4 +358,28 @@ net_main_init (void)
 	net_register ("ippassfilter", &net_ip_func, "f");
 }
 
+/*
+static void heartbeat_thread (void *arg) {
+u64 start,cur;
+
+start = get_time();
+
+    for (;;) {
+        schedule();
+        cur = get_time();
+        if(cur - start >100){
+        printf("100\n");
+        start = cur;
+        }
+    }
+        thread_exit();
+}
+
+static void heartbeat_kernel_init (void) {
+    thread_new (heartbeat_thread, NULL, VMM_STACKSIZE);
+}
+
+
+INITFUNC ("config1", heartbeat_kernel_init);
+*/
 INITFUNC ("driver1", net_main_init);
