@@ -5355,6 +5355,7 @@ netif_list          0x8               output.o
                 0x0000000040981b78                slotTable
                 0x0000000040981b80                slotFlag
                 0x0000000040981b81                libInitFlag
+                0x0000000040982ad0                SQLite_Result
                 0x0000000040983398                OPENSSL_NONPIC_relocated
                 0x00000000409833a0                OPENSSL_ia32cap_P
                 0x0000000040983fe8                cleanse_ctr
@@ -5443,18 +5444,18 @@ OUTPUT(bitvisor.elf elf64-x86-64)
  .debug_aranges
                 0x0000000000000000     0x75c0 output.o
 
-.debug_info     0x0000000000000000   0x4deacc
- .debug_info    0x0000000000000000   0x4deacc output.o
+.debug_info     0x0000000000000000   0x4deae2
+ .debug_info    0x0000000000000000   0x4deae2 output.o
 
-.debug_abbrev   0x0000000000000000    0x60f0b
- .debug_abbrev  0x0000000000000000    0x60f0b output.o
+.debug_abbrev   0x0000000000000000    0x60efc
+ .debug_abbrev  0x0000000000000000    0x60efc output.o
 
-.debug_line     0x0000000000000000    0x72451
- .debug_line    0x0000000000000000    0x72451 output.o
+.debug_line     0x0000000000000000    0x72453
+ .debug_line    0x0000000000000000    0x72453 output.o
 
-.debug_str      0x0000000000000000    0x44ee4
- .debug_str     0x0000000000000000    0x44ee4 output.o
-                                     0x20766c (緩和前のサイズ)
+.debug_str      0x0000000000000000    0x44ef2
+ .debug_str     0x0000000000000000    0x44ef2 output.o
+                                     0x20767a (緩和前のサイズ)
 
 .debug_loc      0x0000000000000000   0x32f8ad
  .debug_loc     0x0000000000000000   0x32f8ad output.o
@@ -7411,6 +7412,7 @@ SMIME_read_CMS                                    output.o
 SMIME_text                                        output.o
 SMIME_write_ASN1                                  output.o
 SMIME_write_CMS                                   output.o
+SQLite_Result                                     output.o
 STACK_version                                     output.o
 SXNETID_free                                      output.o
 SXNETID_it                                        output.o

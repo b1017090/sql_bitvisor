@@ -310,9 +310,17 @@ static char heap[1048576] __attribute__ ((aligned (8)));
 /*		msgsendint(time,0);
 */		rc2 = sqlite3_exec (db, sqlbuf, callback, 0, &zErrMsg);
 		if (rc2 != SQLITE_OK) {
-                printf ("SQL error: %s\n", zErrMsg);
+//                int a = msgopen("SQLite_Result");
+//		msgsendint(a,0);
+//		msgclose(a);
+		printf ("SQL error: %s\n", zErrMsg);
                 sqlite3_free (zErrMsg);
-                }
+            //    }else{	
+               // int a = msgopen("SQLite_Result");
+	//	msgsendint(a,rc2);
+	//	msgclose(a);
+		}
+
 
 /*		msgsendint(time2,0);
 */

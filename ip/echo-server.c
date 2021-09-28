@@ -57,6 +57,8 @@
 
 #if LWIP_TCP
 
+int SQLite_Result = 0;
+
 static struct tcp_pcb *echo_pcb;
 
 enum echo_states
@@ -118,6 +120,14 @@ static err_t echo_poll(void *arg, struct tcp_pcb *tpcb);
 static err_t echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void echo_send(struct tcp_pcb *tpcb, struct echo_state *es);
 static void echo_close(struct tcp_pcb *tpcb, struct echo_state *es);
+
+static int
+Result_handler(int m, int c)
+{
+SQLite_Result = 1;
+return 0;
+}
+
 
 void raft_init(struct raft_states *rs ){
 rs->current_term = 0;
@@ -269,7 +279,8 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 //  	end = get_cpu_time();
 //	printf("%lld\n", end-start);
    //    printf("msgsendbufend\n");
-        msgclose(sqlite);
+//	msgregister("SQLite_Result",Result_handler);
+	msgclose(sqlite);
       //  printf("msgclosed\n");
 
 
@@ -427,17 +438,26 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
 {
   struct pbuf *ptr;
   err_t wr_err = ERR_OK;
- 
+//  err_t wr_err2 = ERR_OK;
+
   while ((wr_err == ERR_OK) &&
          (es->p != NULL) && 
          (es->p->len <= tcp_sndbuf(tpcb)))
   {
   ptr = es->p;
-
-
-
+//if(SQLite_Result == 0){
   /* enqueue data for transmission */
+//  ptr->payload = "SUCCESS";
+//  ptr->len = 8;
   wr_err = tcp_write(tpcb, ptr->payload, ptr->len, 1);
+//  wr_err = tcp_write(tpcb, "SUCCESS", 7, 1);
+//}else{
+//  ptr->payload = "FAILED";
+//  ptr->len = 7;
+//  wr_err = tcp_write(tpcb, ptr->payload, ptr->len, 1);
+//  wr_err = tcp_write(tpcb, "FAILED", 6, 1);
+//  SQLite_Result = 0;
+//}
   if (wr_err == ERR_OK)
   {
      u16_t plen;
