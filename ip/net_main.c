@@ -48,6 +48,15 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 
+extern int term;
+extern int LeaderId;
+extern char *logmsg;
+extern char log[100];
+extern int LeaderCommit;
+extern int index;
+
+
+
 struct net_task {
 	LIST1_DEFINE (struct net_task);
 	void (*func) (void *arg);
@@ -134,7 +143,7 @@ net_thread (void *arg)
 	connectip[2]=100;
 	connectip[3]=50;
 	
-	int raftId = 0;
+/*	int raftId = 0;
 	int term = 0;
 	int LeaderId = 0;
 	char *logmsg = "hello";
@@ -142,9 +151,10 @@ net_thread (void *arg)
 	int LeaderCommit = 0;
 	int index = 0;
 	log[index] = *logmsg;
+*/
 	char send_buffer[100];
 	snprintf(send_buffer,100,"%d,%d,%d,%s",term,LeaderId,index,logmsg);
-	printf("%s\n",&log[index]);
+//	printf("%s\n",&log[index]);
 	printf("%s\n", send_buffer);	
 	for (;;) {
 		ip_main_task ();

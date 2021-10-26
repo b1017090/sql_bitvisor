@@ -57,6 +57,14 @@
 
 #if LWIP_TCP
 
+char *raft_state = "Leader";
+int term = 0;
+int LeaderId = 0;
+char *logmsg = "hello";
+char log[100];
+int LeaderCommit = 0;
+int index = 0;
+
 int SQLite_Result = 0;
 
 static struct tcp_pcb *echo_pcb;
@@ -79,40 +87,6 @@ struct echo_state
 };
 
 
-//ラフトに使う情報を保存する構造体
-typedef struct raft_states{
-raft_state_e self_raft_state;
-int self_ip;
-raft_term_t current_term;
-raft_index_t index_counter;
-raft_node_id_t node_id;
-char log[255];
-};
-
-struct raft_states *raft_states;
-
-//raft state追加
-raft_state_e raft_state = RAFT_STATE_LEADER;
-
-//entryvoteで受け取ったデータの文字列と長さを格納
-raft_entry_data_t *receive_entry_data;
-//受け取ったデータをサーバに保存
-raft_entry_t *store_entry_data;
-//クライアントがメッセージを飛ばすときは、raft_entry_tに沿った内容で飛ばす
-
-//コミットされたかされてないかをクライアントに伝える
-msg_entry_response_t *entry_response;
-//サーバがリーダになりたいときに飛ばすrequestvote
-msg_requestvote_t *requestvote;
-//投票要求を受け入れたかどうかを伝える
-msg_requestvote_response_t *request_response;
-
-//クライアントからのエントリーを適用して大丈夫かの確認appendentry
-msg_appendentries_t *appendentries;
-//適用して大丈夫かの返答
-msg_appendentries_response_t *appendentries_response;
-
-
 static err_t echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
 static err_t echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 static void echo_error(void *arg, err_t err);
@@ -128,27 +102,10 @@ SQLite_Result = 1;
 return 0;
 }
 
-
-void raft_init(struct raft_states *rs ){
-rs->current_term = 0;
-rs->index_counter = 0;
-if(rs->self_raft_state == RAFT_STATE_LEADER){
-rs->node_id = 0;
-}else {
-rs->node_id = 1;
-}
-}
-
 void
 echo_server_init (int port)
 {
   echo_pcb = tcp_new();
-
-  //サーバにRaftのステータスを追加
-
-  //わからないけどとりあえず追加
-  raft_states = (struct raft_states *)mem_malloc(sizeof(struct raft_states));
-  raft_states->self_raft_state = RAFT_STATE_LEADER;
 
   
   if (echo_pcb != NULL)
@@ -257,11 +214,43 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
   //  printf("%llu\n",get_cpu_time());
          /* char配列にTCPペイロードと長さをコピー */
-      unsigned char str[32];
+      unsigned char str[255];
   //    printf("memset\n");
-      memset(str, 0, 32);
+      memset(str, 0, 255);
 //      printf("memcpy\n");
       memcpy(str, p -> payload, p -> len);
+char *str2;
+int start = 0;
+int count = 0;
+for(int i=0;str[i]!='\0';i++){
+if(strcmp(",",&str[i],1)==0){
+if(count == 0){
+term = (unsigned char)str2;
+start = 0;
+count++;
+i++;
+}else if(count == 1){
+LeaderId = (unsigned char)str2;
+start = 0;
+count++;
+i++;
+}else if(count == 2){
+index = (unsigned char)str2;
+start = 0;
+count++;
+i++;
+}else if(count == 3){
+logmsg = str2;
+start = 0;
+count++;
+i++;
+}
+}else{
+str2[start]=str[i];
+start++;
+}
+}
+printf("%d,%d,%d,%s\n",term,LeaderId,index,logmsg);
 //      printf("str -> %s\n", str);
       /* メッセージバッファを用意 */
       struct msgbuf mbuf;
