@@ -14,5 +14,5 @@ extern int index = 0;
 void echo_server_init (int port);
 int echo_client_send (char *send_buffer);
 void echo_client_init (int *ipaddr, int port);
-
+int raft_heartbeat(void *arg);
 #endif	/* ECHO_H */

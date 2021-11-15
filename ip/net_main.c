@@ -142,7 +142,7 @@ net_thread (void *arg)
 	connectip[1]=168;
 	connectip[2]=100;
 	connectip[3]=50;
-	
+void *a;
 /*	int raftId = 0;
 	int term = 0;
 	int LeaderId = 0;
@@ -152,23 +152,25 @@ net_thread (void *arg)
 	int index = 0;
 	log[index] = *logmsg;
 */
-	char send_buffer[100];
-	snprintf(send_buffer,100,"%d,%d,%d,%s",term,LeaderId,index,logmsg);
+//	char send_buffer[100];
+//	snprintf(send_buffer,100,"%d,%d,%d,%s",term,LeaderId,index,logmsg);
 //	printf("%s\n",&log[index]);
-	printf("%s\n", send_buffer);	
+//	printf("%s\n", send_buffer);	
 	for (;;) {
-		ip_main_task ();
-		net_task_call ();
 	        now = get_time();
-        	if(now - start > 2*48000000/*1minute*/){
-		
+        	if(now - start > 20*1000000/*20seconds*/){
 	//	snprintf(send_buffer,100,"%d,%s",term,msg);
-		echo_client_init(connectip, 12345);
-		echo_client_send(send_buffer);
+//		echo_client_init(connectip, 12345);
+//		echo_client_send(send_buffer);
 	//	printf("%s\n",send_buffer);
+		raft_heartbeat(a);
 		start = now;
+                ip_main_task ();
+                net_task_call ();
 		schedule();
 		}else{
+	        ip_main_task ();
+                net_task_call ();
 		schedule();
 		}
 		//		msgregister("timecount",time_handler);

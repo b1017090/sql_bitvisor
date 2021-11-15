@@ -41,19 +41,31 @@
  */
 
 
+//#include "raft.h"
+//#include "raft_log.h"
+//#include "raft_private.h"
+//#include "raft_types.h"
+#include "core/types.h"
+#include <core/config.h>
+#include <core/initfunc.h>
+#include <core/list.h>
+#include <core/mm.h>
+#include <core/panic.h>
+#include <core/spinlock.h>
+#include <core/string.h>
+#include <core/thread.h>
+#include <core/time.h>
+#include <../core/sleep.h>
+#include <core/printf.h>
+#include <core/process.h>
+#include <net/netapi.h>
+#include "ip_main.h"
+#include "echo.h"
+#include "tcpip.h"
+#include "lwip/tcp.h"
 #include "lwip/debug.h"
 #include "lwip/stats.h"
-#include "lwip/tcp.h"
-#include "raft.h"
-#include "raft_log.h"
-#include "raft_private.h"
-#include "raft_types.h"
-#include "core/process.h"
-#include "core/printf.h"
-#include "core/time.h"
-#include "core/initfunc.h"
-#include "core/thread.h"
-#include "core/types.h"
+
 
 #if LWIP_TCP
 
@@ -95,12 +107,12 @@ static err_t echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void echo_send(struct tcp_pcb *tpcb, struct echo_state *es);
 static void echo_close(struct tcp_pcb *tpcb, struct echo_state *es);
 
-static int
+/*static int
 Result_handler(int m, int c)
 {
 SQLite_Result = 1;
 return 0;
-}
+}*/
 
 void
 echo_server_init (int port)
@@ -144,19 +156,23 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   
 
   es = (struct echo_state *)mem_malloc(sizeof(struct echo_state));
-
+printf("a\n");
   if (es != NULL)
   {
     es->state = ES_ACCEPTED;
     es->pcb = newpcb;
     es->retries = 0;
     es->p = NULL;
-
+printf("b\n");
     /* pass newly allocated es to our callbacks */
     tcp_arg(newpcb, es);
+printf("c\n");
     tcp_recv(newpcb, echo_recv);
+printf("d\n");
     tcp_err(newpcb, echo_error);
+printf("e\n");
     tcp_poll(newpcb, echo_poll, 0);
+printf("f\n");
     ret_err = ERR_OK;
   }
   else
@@ -175,20 +191,25 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
   LWIP_ASSERT("arg != NULL",arg != NULL);
   es = (struct echo_state *)arg;
+printf("g\n");
   if (p == NULL)
   {
     /* remote host closed connection */
     es->state = ES_CLOSING;
+printf("h\n");
     if(es->p == NULL)
     {
        /* we're done sending, close it */
        echo_close(tpcb, es);
+printf("i\n");
     }
     else
     {
       /* we're not done yet */
       tcp_sent(tpcb, echo_sent);
+printf("j\n");
       echo_send(tpcb, es);
+printf("k\n");
     }
     ret_err = ERR_OK;
   }
@@ -204,14 +225,14 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   }
   else if(es->state == ES_ACCEPTED)
   {
-  
+  printf("l\n");
   /* first data chunk in p->payload */
     es->state = ES_RECEIVED;
     /* store reference to incoming pbuf (chain) */
     es->p = p;
 
     tcp_sent(tpcb, echo_sent);
-
+printf("m\n");
   //  printf("%llu\n",get_cpu_time());
          /* char配列にTCPペイロードと長さをコピー */
       unsigned char str[255];
@@ -219,42 +240,11 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
       memset(str, 0, 255);
 //      printf("memcpy\n");
       memcpy(str, p -> payload, p -> len);
-char *str2;
-int start = 0;
-int count = 0;
-for(int i=0;str[i]!='\0';i++){
-if(strcmp(",",&str[i],1)==0){
-if(count == 0){
-term = (unsigned char)str2;
-start = 0;
-count++;
-i++;
-}else if(count == 1){
-LeaderId = (unsigned char)str2;
-start = 0;
-count++;
-i++;
-}else if(count == 2){
-index = (unsigned char)str2;
-start = 0;
-count++;
-i++;
-}else if(count == 3){
-logmsg = str2;
-start = 0;
-count++;
-i++;
-}
-}else{
-str2[start]=str[i];
-start++;
-}
-}
-printf("%d,%d,%d,%s\n",term,LeaderId,index,logmsg);
-//      printf("str -> %s\n", str);
+//printf("%d,%d,%d,%s\n",term,LeaderId,index,logmsg);
+      printf("str -> %s\n", str);
       /* メッセージバッファを用意 */
       struct msgbuf mbuf;
-    //  printf("setmsgbuf\n");
+      printf("setmsgbuf\n");
       setmsgbuf(&mbuf, str, sizeof str,0);
 
       /* SQL実行文の送信 */
@@ -497,27 +487,20 @@ echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
   }  
   tcp_close(tpcb);
 }
-/*
-static void heartbeat_thread (void *arg) { 
-u64 start,cur;
 
-start = get_time();
+int raft_heartbeat (void *arg){
+        int connectip[4];
+        connectip[0]=192;
+        connectip[1]=168;
+        connectip[2]=100;
+        connectip[3]=50;
 
-    for (;;) {  
-	schedule();
-      	cur = get_time();
-	if(cur - start >100){
-	printf("100\n");
-	start = cur;
-	}	
-    }  
-	thread_exit();
-} 
+        char send_buffer[100];
+        snprintf(send_buffer,100,"%d,%d,%d,%s",term,LeaderId,index,logmsg);
 
-static void heartbeat_kernel_init (void) { 
-    thread_new (heartbeat_thread, NULL, VMM_STACKSIZE); 
-}  
+	echo_client_init(connectip, 12345);
+        echo_client_send(send_buffer);
+return 0;
+}
 
-INITFUNC ("config1", heartbeat_kernel_init);
-*/
 #endif /* LWIP_TCP */
